@@ -2,7 +2,6 @@ import typing
 
 import sqlalchemy
 import typesystem
-from importlib import import_module
 
 
 class ModelField:
@@ -69,7 +68,7 @@ class Text(ModelField):
 
 class Integer(ModelField):
     def get_validator(self, **kwargs) -> typesystem.Field:
-        return typesystem.Integer(**kwargs)
+        return typesystem.Integer()
 
     def get_column_type(self):
         return sqlalchemy.Integer()
@@ -81,6 +80,14 @@ class Float(ModelField):
 
     def get_column_type(self):
         return sqlalchemy.Float()
+
+
+class BigInteger(ModelField, typesystem.Integer):
+    def get_validator(self, **kwargs):
+        return typesystem.Integer()
+
+    def get_column_type(self):
+        return sqlalchemy.BigInteger()
 
 
 class Boolean(ModelField):
@@ -134,7 +141,7 @@ class ForeignKey(ModelField):
 
     @property
     def target(self):
-        if not hasattr(self, '_target'):
+        if not hasattr(self, "_target"):
             if isinstance(self.to, str):
                 self._target = self.registry.models[self.to]
             else:
@@ -149,7 +156,9 @@ class ForeignKey(ModelField):
         to_field = target.fields[target.pkname]
 
         column_type = to_field.get_column_type()
-        constraints = [sqlalchemy.schema.ForeignKey(f"{target.tablename}.{target.pkname}")]
+        constraints = [
+            sqlalchemy.schema.ForeignKey(f"{target.tablename}.{target.pkname}")
+        ]
         return sqlalchemy.Column(
             name,
             column_type,
